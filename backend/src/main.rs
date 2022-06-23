@@ -1,14 +1,13 @@
-use actix_web::{web, App, HttpServer, HttpResponse};
+use actix_web::{web, App, HttpServer, web::Json, Result};
+use serde::Serialize;
 
-// struct HelloJson {
-//     content: String
-// }
+#[derive(Serialize)]
+struct HelloJson {
+    name: String
+}
 
-async fn send_hello() -> HttpResponse {
-    // let hellow_world = HelloJson {
-    //     content: "Hello World".to_string()
-    // };
-    HttpResponse::Ok().body("hello world")
+async fn send_hello() -> Result<Json<HelloJson>> {
+    Ok(Json(HelloJson { name: "oppai".to_string() }))
 }
 
 #[actix_web::main]
