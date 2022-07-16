@@ -29,7 +29,7 @@ type alias Model = { todos: List String, addToDo: String }
 -- init
 init: Model 
 init =
-  { todos = ["ToDo1", "ToDo2", "ToDo3"], addToDo = "" }
+  { todos = [], addToDo = "" }
 
 
 -- update 
@@ -37,7 +37,7 @@ update: Msg -> Model -> Model
 update msg model =
   case msg of 
     Add -> 
-      { model | todos = model.todos ++ [model.addToDo] }
+      { model | todos = model.todos ++ [model.addToDo], addToDo = "" }
     Done -> 
       { model | addToDo = "" }
     Input toDoName ->
