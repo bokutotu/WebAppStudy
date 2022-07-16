@@ -1,43 +1,12 @@
 module Main exposing (..)
 
--- import Browser
-import Html exposing (..)
-import Html.Attributes exposing (style)
-import Html.Events exposing (..)
+import Html exposing (input, form, Html, li, text, ul, div, button)
+import Html.Attributes exposing (type_, value, placeholder)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Json.Decode exposing (Decoder, map4, field, int, string)
-
--- -- MAIN
-
-
--- main =
---   Browser.element {
---     init = init,
---     view = view,
---     update = update,
---     subscription = subscription
---   }
-
--- type alias Model = Int
-
--- init: Model -> (Model, Cmd)
--- init Model = 
---   (0, Cmd.none)
-
--- type alias Msg = String
-
--- view: Msg -> Html Msg
-
--- Press buttons to increment and decrement a counter.
---
--- Read how it works:
---   https://guide.elm-lang.org/architecture/buttons.html
---
-
-
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Dict exposing (Dict)
 
 
 
@@ -48,36 +17,66 @@ main =
   Browser.sandbox { init = init, update = update, view = view }
 
 
+-- Msg
+type Msg = 
+  Add 
+  | Done 
+  | Input String
 
--- MODEL
+-- Model
+type alias Model = { todos: List String, addToDo: String }
 
-
-type alias Model = String
-
-
-init : Model
+-- init
+init: Model 
 init =
-  "Hello World"
+  { todos = ["ToDo1", "ToDo2", "ToDo3"], addToDo = "" }
 
 
-
--- UPDATE
-
-
-type alias Msg = String
-
-
-update : Msg -> Model -> Model
+-- update 
+update: Msg -> Model -> Model
 update msg model =
-  "Hello World"
+  case msg of 
+    Add -> 
+      { model | todos = model.todos ++ [model.addToDo] }
+    Done -> 
+      { model | addToDo = "" }
+    Input toDoName ->
+      { model | addToDo = toDoName }
 
 
-   -- VIEW
+-- view
+view: Model -> Html Msg
+view model = 
+  div[] 
+  [
+    viewInputToDo model 
+    , viewAllToDo model
+  ]
 
 
-view : Model -> Html Msg
-view model =
-  div []
+viewInputToDo: Model -> Html Msg
+viewInputToDo model  =
+  form [
+    onSubmit Add
+  ]
+  [
+    div []
     [
-      text model 
+      input 
+      [ type_ "text" 
+      , value model.addToDo
+      , placeholder "To Do Name"
+      , onInput Input
+      ] []
+      , button
+      [
+        type_ "submit"
+      ] [text "Add"]
     ]
+  ]
+
+viewAllToDo: Model -> Html msg
+viewAllToDo model =
+  model.todos
+    |> List.map (li [] << List.singleton << text)
+    |> ul []
