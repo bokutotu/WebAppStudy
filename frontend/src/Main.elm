@@ -1,12 +1,13 @@
 module Main exposing (..)
 
-import Html exposing (input, form, Html, li, text, ul, div, button)
+import Html exposing ( input, form, Html, li, text, ul, div, button, select, option )
 import Html.Attributes exposing (type_, value, placeholder)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Events exposing ( onClick, onInput, onSubmit, on )
 import Http
-import Json.Decode exposing (Decoder, map4, field, int, string)
+import Json.Decode exposing (Decoder, map, field, int, string)
 import Browser
 import Dict exposing (Dict)
+import Debug
 
 
 
@@ -23,7 +24,8 @@ type State =
   | Doing
 
 type alias ToDo = 
-  { name : String
+  { id: Int
+  , name : String
   , state: State
   }
 
@@ -39,9 +41,9 @@ stateToString state =
       "Doing"
 
 
-newToDo: String -> ToDo
-newToDo name = 
-  {name = name, state = Will}
+newToDo: Int -> String -> ToDo
+newToDo id name = 
+  {id = id, name = name, state = Will}
 
 
 
@@ -50,19 +52,32 @@ type Msg =
   Add 
   | TurnDone 
   | Input String
+  | ChangeState State Int
 
 
 
 
 -- Model
-type alias Model = { todos: List ToDo, addToDo: String }
+type alias Model = { numToDos: Int, todos: List ToDo, addToDo: String }
 
 
 
 -- init
 init: Model 
 init =
-  { todos = [], addToDo = "" }
+  { numToDos = 0, todos = [], addToDo = "" }
+
+
+updateToDo: List ToDo -> Int -> State -> List ToDo
+updateToDo todoList id state =
+  let
+    toggle item =
+      if item.id == id then
+        { item | state = state }
+      else
+        item
+  in
+    List.map toggle todoList
 
 
 -- update 
@@ -70,12 +85,19 @@ update: Msg -> Model -> Model
 update msg model =
   case msg of 
     Add -> 
-      { model | todos = model.todos ++ [ newToDo model.addToDo], addToDo = "" }
+      { model | 
+        todos = model.todos ++ [ newToDo model.numToDos model.addToDo]
+        , addToDo = ""
+        , numToDos = model.numToDos + 1
+      }
     TurnDone -> 
       { model | addToDo = "" }
     Input toDoName ->
       { model | addToDo = toDoName }
-
+    ChangeState state id ->
+      { model |
+        todos = updateToDo model.todos id state
+      }
 
 -- view
 view: Model -> Html Msg
@@ -108,15 +130,24 @@ viewInputToDo model  =
     ]
   ]
 
-viewAllToDo: Model -> Html msg
+viewAllToDo: Model -> Html Msg
 viewAllToDo model =
   model.todos
     |> List.map ( viewToDoItem >> List.singleton >> li [] )
     |> ul []
 
-viewToDoItem: ToDo -> Html msg
+viewToDoItem: ToDo -> Html Msg
 viewToDoItem todo =
   div []
   [ div [] [ text todo.name ]
   , div [] [ text (stateToString todo.state) ]
+  , div [] [ radioButton todo.id ]
   ]
+
+radioButton: Int -> Html Msg
+radioButton id =
+  select [] 
+  [ option [ onClick (ChangeState Done id)] [text "Done"]
+  , option [ onClick (ChangeState Doing id)] [ text "Doing" ]
+  , option [ onClick (ChangeState Will id)] [text "Will"]
+  ] 
