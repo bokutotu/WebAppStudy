@@ -6,8 +6,6 @@ import Html.Events exposing ( onClick, onInput, onSubmit, on )
 import Http
 import Json.Decode exposing (Decoder, map, field, int, string)
 import Browser
-import Dict exposing (Dict)
-import Debug
 
 
 
@@ -103,10 +101,12 @@ update msg model =
 view: Model -> Html Msg
 view model = 
   div[] 
-  [
-    viewInputToDo model 
-    , viewAllToDo model
+  [ viewInputToDo model 
+  , viewToDos model Will "Will"
+  , viewToDos model Doing "Doing"
+  , viewToDos model Done "Done"
   ]
+
 
 
 viewInputToDo: Model -> Html Msg
@@ -130,11 +130,17 @@ viewInputToDo model  =
     ]
   ]
 
-viewAllToDo: Model -> Html Msg
-viewAllToDo model =
-  model.todos
-    |> List.map ( viewToDoItem >> List.singleton >> li [] )
-    |> ul []
+
+viewToDos: Model -> State -> String -> Html Msg
+viewToDos model state div_title =
+  div [] [
+   div [] [ text div_title ]
+   , model.todos
+      |> List.filter (\item -> item.state == state)
+      |> List.map ( viewToDoItem >> List.singleton >> li [] )
+      |> ul []
+  ]
+ 
 
 viewToDoItem: ToDo -> Html Msg
 viewToDoItem todo =
@@ -144,10 +150,12 @@ viewToDoItem todo =
   , div [] [ radioButton todo.id ]
   ]
 
+
+
 radioButton: Int -> Html Msg
 radioButton id =
   select [] 
-  [ option [ onClick (ChangeState Done id)] [text "Done"]
-  , option [ onClick (ChangeState Doing id)] [ text "Doing" ]
-  , option [ onClick (ChangeState Will id)] [text "Will"]
+  [ option [ onClick (ChangeState Done  id) ] [ text  "Done" ]
+  , option [ onClick (ChangeState Doing id) ] [ text  "Doing" ]
+  , option [ onClick (ChangeState Will  id) ] [ text  "Will" ]
   ] 
