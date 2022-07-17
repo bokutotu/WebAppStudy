@@ -17,14 +17,47 @@ main =
   Browser.sandbox { init = init, update = update, view = view }
 
 
+type State = 
+  Will
+  | Done
+  | Doing
+
+type alias ToDo = 
+  { name : String
+  , state: State
+  }
+
+
+stateToString: State -> String
+stateToString state =
+  case state of
+    Will -> 
+      "Will"
+    Done -> 
+      "Done"
+    Doing ->
+      "Doing"
+
+
+newToDo: String -> ToDo
+newToDo name = 
+  {name = name, state = Will}
+
+
+
 -- Msg
 type Msg = 
   Add 
-  | Done 
+  | TurnDone 
   | Input String
 
+
+
+
 -- Model
-type alias Model = { todos: List String, addToDo: String }
+type alias Model = { todos: List ToDo, addToDo: String }
+
+
 
 -- init
 init: Model 
@@ -37,8 +70,8 @@ update: Msg -> Model -> Model
 update msg model =
   case msg of 
     Add -> 
-      { model | todos = model.todos ++ [model.addToDo], addToDo = "" }
-    Done -> 
+      { model | todos = model.todos ++ [ newToDo model.addToDo], addToDo = "" }
+    TurnDone -> 
       { model | addToDo = "" }
     Input toDoName ->
       { model | addToDo = toDoName }
@@ -78,5 +111,12 @@ viewInputToDo model  =
 viewAllToDo: Model -> Html msg
 viewAllToDo model =
   model.todos
-    |> List.map (li [] << List.singleton << text)
+    |> List.map ( viewToDoItem >> List.singleton >> li [] )
     |> ul []
+
+viewToDoItem: ToDo -> Html msg
+viewToDoItem todo =
+  div []
+  [ div [] [ text todo.name ]
+  , div [] [ text (stateToString todo.state) ]
+  ]
