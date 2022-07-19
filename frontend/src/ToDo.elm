@@ -4,7 +4,6 @@ import Html exposing ( input, form, Html, li, text, ul, div, button, select, opt
 import Html.Attributes exposing (type_, value, placeholder)
 import Html.Events exposing ( onClick, onInput, onSubmit, on )
 import Http
-import Json.Decode exposing (Decoder, map, field, int, string)
 
 
 
