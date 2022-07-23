@@ -1,9 +1,8 @@
 module Main exposing (..)
 
-import Html exposing ( Html )
 import Browser
-
-import ToDo exposing ( initToDo, updateToDo, ToDoModel, ToDoMsg, viewToDo )
+import Html exposing (Html)
+import ToDo exposing (ToDoModel, ToDoMsg, initToDo, updateToDo, viewToDo)
 
 
 
@@ -11,44 +10,45 @@ import ToDo exposing ( initToDo, updateToDo, ToDoModel, ToDoMsg, viewToDo )
 
 
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+    Browser.sandbox { init = init, update = update, view = view }
+
 
 
 -- Model
 
 
-
-type Msg = ToDoMsg ToDoMsg
-
-
-type alias Model = { todo: ToDoModel }
+type Msg
+    = ToDoMsg ToDoMsg
 
 
--- init 
+type alias Model =
+    { todo : ToDoModel }
 
 
 
-init: Model
+-- init
+
+
+init : Model
 init =
-  { todo = initToDo }
+    { todo = initToDo }
 
 
 
 -- update
 
 
-update: Msg -> Model -> Model
+update : Msg -> Model -> Model
 update msg model =
-  case msg of
-    ToDoMsg todomsg ->
-      { model | todo = ( updateToDo todomsg model.todo ) }
+    case msg of
+        ToDoMsg todomsg ->
+            { model | todo = updateToDo todomsg model.todo }
 
 
 
 -- view
 
 
-view: Model -> Html Msg
+view : Model -> Html Msg
 view model =
-  Html.map ToDoMsg ( viewToDo model.todo ) 
-
+    Html.map ToDoMsg (viewToDo model.todo)
