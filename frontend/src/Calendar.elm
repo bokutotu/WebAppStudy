@@ -12,6 +12,7 @@ import Task exposing ( Task )
 import Time exposing (Month(..), Weekday(..))
 
 import DateTimePicker.DateUtils exposing (Day, generateCalendar)
+import DateTimePicker.Formatter exposing (fullMonth)
 
 
 -- MAIN
@@ -37,6 +38,8 @@ type alias Model =
 type Msg 
     = UpdateDay Date
     | SelectDate Date
+    | NextMonth
+    | PrevMonth
 
 
 -- INIT
@@ -54,7 +57,7 @@ view model =
     [ 
         div []
         [ div [] [ text ("Today is " ++ (Date.toIsoString model.today ) )] 
-        , calendar (Maybe.withDefault [[]] model.monthShowDayList )
+        , calendar model
         ]
     ]
 
@@ -86,14 +89,23 @@ youbiList =
     )
 
 
-calendar: List (List Day) -> Html Msg
-calendar month =
+viewButton: String -> Msg -> Html Msg
+viewButton massage  msg =
+    button [onClick msg] [ text massage ]
+
+
+calendar: Model -> Html Msg
+calendar model =
     let
-        calendarDaysList = List.map (\week -> viewWeek week) month
+        calendarDaysList = List.map (\week -> viewWeek week) (Maybe.withDefault [[]] model.monthShowDayList)
         youbiShowList = youbiList
         showList = youbiShowList ++ calendarDaysList
     in
-        table [] showList
+    div [] 
+    [ div [] [ text (fullMonth (Date.month (Maybe.withDefault model.today model.forcusDate))) ]
+    , div [] [ viewButton "Next Month" NextMonth, viewButton "Previous Month" PrevMonth ]
+    , table [] showList
+    ]
     -- List.map (\week -> viewWeek week ) month |> table []
 
 
@@ -121,3 +133,25 @@ update msg model =
                 , Cmd.none
             )
 
+        NextMonth ->
+            let
+                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
+                nextMonthDay = Date.add Months 1 day
+                nextMonthYear = Date.year nextMonthDay
+                nextMonthMonth = Date.month nextMonthDay
+                nextMonthCalendar = generateCalendar Sun nextMonthMonth nextMonthYear
+            in
+            ( { model | forcusDate = Just nextMonthDay, monthShowDayList = Just nextMonthCalendar }
+            , Cmd.none
+            )
+        PrevMonth -> 
+            let
+                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
+                prevMonthDay = Date.add Months -1 day
+                prevMonthYear = Date.year prevMonthDay
+                prevMonthMonth = Date.month prevMonthDay
+                prevMonthCalendar = generateCalendar Sun prevMonthMonth prevMonthYear
+            in
+            ( { model | forcusDate = Just prevMonthDay, monthShowDayList = Just prevMonthCalendar }
+            , Cmd.none
+            )

@@ -5,6 +5,7 @@ module DateTimePicker.Formatter exposing
     , footerFormatter
     , timeFormatter
     , titleFormatter
+    , fullMonth
     )
 
 {-|
