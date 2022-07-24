@@ -1,4 +1,4 @@
-module Calendar exposing (main)
+module Calendar exposing (Msg, view, Model, update, init)
 
 import Browser
 
@@ -16,14 +16,14 @@ import DateTimePicker.Formatter exposing (fullMonth)
 
 
 -- MAIN
-main: Program () Model Msg
-main =
-    Browser.document 
-    { init = \_ -> init
-    , view = view
-    , update = update
-    , subscriptions = always Sub.none
-    }
+-- main: Program () Model Msg
+-- main =
+--     Browser.document 
+--     { init = \_ -> init
+--     , view = view
+--     , update = update
+--     , subscriptions = always Sub.none
+--     }
 
 
 -- MODEL
@@ -61,7 +61,7 @@ init =
 
 
 -- VIEW
-view: Model -> Browser.Document Msg
+view: Model -> Html Msg
 view model =
     let 
         showMonth = viewMonth model
@@ -75,13 +75,10 @@ view model =
         modeChangeMsg = if model.showType == Month then ShowWeek else ShowMonth
 
     in 
-        Browser.Document "Caledar"
-        [ 
-            div []
-            [ div [] [ text ("Today is " ++ (Date.toIsoString model.today ) )] 
-            , viewButton modeChangeString modeChangeMsg
-            , show
-            ]
+        div []
+        [ div [] [ text ("Today is " ++ (Date.toIsoString model.today ) )] 
+        , viewButton modeChangeString modeChangeMsg
+        , show
         ]
 
 
