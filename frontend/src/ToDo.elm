@@ -1,9 +1,8 @@
-module ToDo exposing (ToDoModel, ToDoMsg, initToDo, updateToDo, viewToDo)
+module ToDo exposing (Model, Msg, init, update, view)
 
 import Html exposing (Html, button, div, form, input, li, option, select, text, ul)
 import Html.Attributes exposing (placeholder, type_, value)
-import Html.Events exposing (on, onClick, onInput, onSubmit)
-import Http
+import Html.Events exposing (onClick, onInput, onSubmit)
 
 
 type State
@@ -41,7 +40,7 @@ newToDo id name =
 -- ToDoMsg
 
 
-type ToDoMsg
+type Msg
     = Add
     | TurnDone
     | Input String
@@ -52,7 +51,7 @@ type ToDoMsg
 -- ToDoModel
 
 
-type alias ToDoModel =
+type alias Model =
     { numToDos : Int, todos : List ToDo, addToDo : String }
 
 
@@ -60,8 +59,8 @@ type alias ToDoModel =
 -- init
 
 
-initToDo : ToDoModel
-initToDo =
+init : Model
+init =
     { numToDos = 0, todos = [], addToDo = "" }
 
 
@@ -82,8 +81,8 @@ updateToDoItem todoList id state =
 -- update
 
 
-updateToDo : ToDoMsg -> ToDoModel -> ToDoModel
-updateToDo msg model =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         Add ->
             { model
@@ -108,8 +107,8 @@ updateToDo msg model =
 -- view
 
 
-viewToDo : ToDoModel -> Html ToDoMsg
-viewToDo model =
+view : Model -> Html Msg
+view model =
     div []
         [ viewInputToDo model
         , viewToDoItems model Will
@@ -118,7 +117,7 @@ viewToDo model =
         ]
 
 
-viewInputToDo : ToDoModel -> Html ToDoMsg
+viewInputToDo : Model -> Html Msg
 viewInputToDo model =
     form
         [ onSubmit Add
@@ -139,7 +138,7 @@ viewInputToDo model =
         ]
 
 
-viewToDoItems : ToDoModel -> State -> Html ToDoMsg
+viewToDoItems : Model -> State -> Html Msg
 viewToDoItems model state =
     div []
         [ div [] [ text (stateToString state) ]
@@ -150,7 +149,7 @@ viewToDoItems model state =
         ]
 
 
-viewToDoItem : ToDo -> Html ToDoMsg
+viewToDoItem : ToDo -> Html Msg
 viewToDoItem todo =
     div []
         [ div [] [ text todo.name ]
@@ -159,7 +158,7 @@ viewToDoItem todo =
         ]
 
 
-radioButton : Int -> Html ToDoMsg
+radioButton : Int -> Html Msg
 radioButton id =
     select []
         [ option [ onClick (ChangeState Done id) ] [ text "Done" ]

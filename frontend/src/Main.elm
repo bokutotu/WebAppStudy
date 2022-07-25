@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Html exposing (..)
 
-import ToDo exposing (ToDoModel, ToDoMsg, initToDo, updateToDo, viewToDo)
+import ToDo
 
 import Calendar
 
@@ -15,12 +15,12 @@ main =
 
 -- Model
 type Msg
-    = ToDoMsg ToDoMsg
+    = ToDoMsg ToDo.Msg
     | CalendarMsg Calendar.Msg
 
 
 type alias Model =
-    { todo : ToDoModel 
+    { todo : ToDo.Model 
     , calendar : Calendar.Model
     }
 
@@ -30,7 +30,7 @@ type alias Model =
 init : (Model, Cmd Msg)
 init =
     let 
-        todoModel = initToDo
+        todoModel = ToDo.init
         calendarInit = Calendar.init
         calendarModel = Tuple.first calendarInit
         calenadrCmdMsg = Tuple.second calendarInit
@@ -44,7 +44,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToDoMsg todomsg ->
-            ( { model | todo = updateToDo todomsg model.todo }, Cmd.none )
+            ( { model | todo = ToDo.update todomsg model.todo }, Cmd.none )
         CalendarMsg calendarmsg ->
             let 
                 calendarUpdate = Calendar.update calendarmsg model.calendar
@@ -59,7 +59,7 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let 
-        todoHtml = Html.map ToDoMsg (viewToDo model.todo)
+        todoHtml = Html.map ToDoMsg (ToDo.view model.todo)
         calendarHtml = Html.map CalendarMsg (Calendar.view model.calendar)
         listHtml = [todoHtml, calendarHtml]
     in

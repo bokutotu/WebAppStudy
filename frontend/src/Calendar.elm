@@ -5,7 +5,7 @@ import Html.Events exposing ( onClick )
 
 import Date exposing ( Date, Unit(..) )
 
-import Task exposing ( Task )
+import Task exposing ( .. )
 
 import Time exposing (Month(..), Weekday(..))
 
@@ -196,6 +196,7 @@ update msg model =
                 ( (calendarUpdate Months 1 model.forcusDate)
                 , Cmd.none
                 )
+
             PrevMonth -> 
                 ( (calendarUpdate Months -1 model.forcusDate)
                 , Cmd.none
@@ -210,6 +211,7 @@ update msg model =
                 ( (calendarUpdate Weeks -1 model.forcusDate)
                 , Cmd.none
                 )
+
             ShowMonth -> 
                 ( { model | showType = Month }, Cmd.none )
 
