@@ -1,7 +1,5 @@
 module Calendar exposing (Msg, view, Model, update, init)
 
-import Browser
-
 import Html exposing ( Html, div, text, button, table, th, tr, td, tbody, thead )
 import Html.Events exposing ( onClick )
 
@@ -14,16 +12,6 @@ import Time exposing (Month(..), Weekday(..))
 import DateTimePicker.DateUtils exposing (Day, generateCalendar, MonthType(..))
 import DateTimePicker.Formatter exposing (fullMonth)
 
-
--- MAIN
--- main: Program () Model Msg
--- main =
---     Browser.document 
---     { init = \_ -> init
---     , view = view
---     , update = update
---     , subscriptions = always Sub.none
---     }
 
 
 -- MODEL
@@ -169,75 +157,61 @@ viewMonth model =
 -- UPDATE
 update: Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        UpdateDay day ->
+    let
+        initDay = Date.fromCalendarDate 2020 Jan 1
+        
+        calendarUpdate: Unit -> Int -> Maybe Date -> Model
+        calendarUpdate calUnit calNum date =
             let 
-                month = Date.month day
-                year = Date.year day
+                day = Maybe.withDefault initDay date
+                calDay = Date.add calUnit calNum day
+                calYear = Date.year calDay
+                calMonth = Date.month calDay
+                calendar = generateCalendar Sun calMonth calYear
             in
-                ( 
-                    { model | 
-                        today = day 
-                        , forcusDate = Just day
-                        , monthShowDayList = Just ( generateCalendar Sun month year )
-                    }
+                { model | forcusDate = Just calDay, monthShowDayList = Just calendar }
+
+    in
+        case msg of
+            UpdateDay day ->
+                let 
+                    month = Date.month day
+                    year = Date.year day
+                in
+                    ( 
+                        { model | 
+                            today = day 
+                            , forcusDate = Just day
+                            , monthShowDayList = Just ( generateCalendar Sun month year )
+                        }
+                        , Cmd.none
+                    )
+            SelectDate day ->
+                (
+                    { model | forcusDate = Just day }
                     , Cmd.none
                 )
-        SelectDate day ->
-            (
-                { model | forcusDate = Just day }
+
+            NextMonth ->
+                ( (calendarUpdate Months 1 model.forcusDate)
                 , Cmd.none
-            )
+                )
+            PrevMonth -> 
+                ( (calendarUpdate Months -1 model.forcusDate)
+                , Cmd.none
+                )
 
-        NextMonth ->
-            let
-                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
-                nextMonthDay = Date.add Months 1 day
-                nextMonthYear = Date.year nextMonthDay
-                nextMonthMonth = Date.month nextMonthDay
-                nextMonthCalendar = generateCalendar Sun nextMonthMonth nextMonthYear
-            in
-            ( { model | forcusDate = Just nextMonthDay, monthShowDayList = Just nextMonthCalendar }
-            , Cmd.none
-            )
-        PrevMonth -> 
-            let
-                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
-                prevMonthDay = Date.add Months -1 day
-                prevMonthYear = Date.year prevMonthDay
-                prevMonthMonth = Date.month prevMonthDay
-                prevMonthCalendar = generateCalendar Sun prevMonthMonth prevMonthYear
-            in
-            ( { model | forcusDate = Just prevMonthDay, monthShowDayList = Just prevMonthCalendar }
-            , Cmd.none
-            )
+            NextWeek -> 
+                ( (calendarUpdate Weeks 1 model.forcusDate)
+                , Cmd.none
+                )
 
-        NextWeek -> 
-            let
-                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
-                nextWeekDay = Date.add Weeks 1 day
-                nextWeekYear = Date.year nextWeekDay
-                nextWeekMonth = Date.month nextWeekDay
-                nextWeekCalendar = generateCalendar Sun nextWeekMonth nextWeekYear
-            in
-            ( { model | forcusDate = Just nextWeekDay, monthShowDayList = Just nextWeekCalendar }
-            , Cmd.none
-            )
+            PrevWeek ->
+                ( (calendarUpdate Weeks -1 model.forcusDate)
+                , Cmd.none
+                )
+            ShowMonth -> 
+                ( { model | showType = Month }, Cmd.none )
 
-        PrevWeek -> 
-            let
-                day = Maybe.withDefault ( Date.fromCalendarDate 2020 Jan 1) model.forcusDate
-                prevWeekDay = Date.add Weeks -1 day
-                prevWeekYear = Date.year prevWeekDay
-                prevWeekMonth = Date.month prevWeekDay
-                prevWeekCalendar = generateCalendar Sun prevWeekMonth prevWeekYear
-            in
-            ( { model | forcusDate = Just prevWeekDay, monthShowDayList = Just prevWeekCalendar }
-            , Cmd.none
-            )
-        
-        ShowMonth -> 
-            ( { model | showType = Month }, Cmd.none )
-
-        ShowWeek -> 
-            ( { model | showType = Week }, Cmd.none)
+            ShowWeek -> 
+                ( { model | showType = Week }, Cmd.none)

@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html)
+import Html exposing (..)
 
 import ToDo exposing (ToDoModel, ToDoMsg, initToDo, updateToDo, viewToDo)
 
@@ -63,5 +63,4 @@ view model =
         calendarHtml = Html.map CalendarMsg (Calendar.view model.calendar)
         listHtml = [todoHtml, calendarHtml]
     in
-        Browser.Document "ToDO App" listHtml
-    -- Html.map ToDoMsg (viewToDo model.todo)
+        Browser.Document "ToDo App" listHtml
