@@ -36,10 +36,7 @@ newToDo id name =
     { id = id, name = name, state = Will }
 
 
-
 -- ToDoMsg
-
-
 type Msg
     = Add
     | TurnDone
@@ -47,25 +44,19 @@ type Msg
     | ChangeState State Int
 
 
-
 -- ToDoModel
-
-
 type alias Model =
     { numToDos : Int, todos : List ToDo, addToDo : String }
 
 
-
 -- init
-
-
 init : Model
 init =
     { numToDos = 0, todos = [], addToDo = "" }
 
 
-updateToDoItem : List ToDo -> Int -> State -> List ToDo
-updateToDoItem todoList id state =
+updateItem : List ToDo -> Int -> State -> List ToDo
+updateItem todoList id state =
     let
         toggle item =
             if item.id == id then
@@ -77,10 +68,7 @@ updateToDoItem todoList id state =
     List.map toggle todoList
 
 
-
 -- update
-
-
 update : Msg -> Model -> Model
 update msg model =
     case msg of
@@ -99,26 +87,23 @@ update msg model =
 
         ChangeState state id ->
             { model
-                | todos = updateToDoItem model.todos id state
+                | todos = updateItem model.todos id state
             }
 
 
-
 -- view
-
-
 view : Model -> Html Msg
 view model =
     div []
-        [ viewInputToDo model
-        , viewToDoItems model Will
-        , viewToDoItems model Doing
-        , viewToDoItems model Done
+        [ viewInput model
+        , viewItems model Will
+        , viewItems model Doing
+        , viewItems model Done
         ]
 
 
-viewInputToDo : Model -> Html Msg
-viewInputToDo model =
+viewInput : Model -> Html Msg
+viewInput model =
     form
         [ onSubmit Add
         ]
@@ -138,19 +123,19 @@ viewInputToDo model =
         ]
 
 
-viewToDoItems : Model -> State -> Html Msg
-viewToDoItems model state =
+viewItems : Model -> State -> Html Msg
+viewItems model state =
     div []
         [ div [] [ text (stateToString state) ]
         , model.todos
             |> List.filter (\item -> item.state == state)
-            |> List.map (viewToDoItem >> List.singleton >> li [])
+            |> List.map (viewItem >> List.singleton >> li [])
             |> ul []
         ]
 
 
-viewToDoItem : ToDo -> Html Msg
-viewToDoItem todo =
+viewItem : ToDo -> Html Msg
+viewItem todo =
     div []
         [ div [] [ text todo.name ]
         , div [] [ text (stateToString todo.state) ]
