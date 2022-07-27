@@ -1,6 +1,6 @@
 module Calendar exposing (Msg, view, Model, update, init)
 
-import Html exposing ( Html, div, text, button, table, th, tr, td, tbody, thead )
+import Html exposing ( Html, div, text, button, table, th, tr, td, thead )
 import Html.Events exposing ( onClick )
 
 import Date exposing ( Date, Unit(..) )
@@ -12,6 +12,8 @@ import Time exposing (Month(..), Weekday(..))
 import DateTimePicker.DateUtils exposing (Day, generateCalendar, MonthType(..))
 import DateTimePicker.Formatter exposing (fullMonth)
 
+import ToDo exposing (..)
+
 
 
 -- MODEL
@@ -20,12 +22,14 @@ type alias Model =
     , forcusDate : Maybe Date
     , monthShowDayList : Maybe (List (List Day))
     , showType : ShowType
+    , todo : ToDo.Model
     }
 
 
 type ShowType 
-    = Month
-    | Week
+    = MonthCalendar
+    | WeekCalendar
+    | DayCalendar
 
 
 -- MSG
@@ -38,12 +42,14 @@ type Msg
     | PrevWeek
     | ShowMonth
     | ShowWeek
+    | ShowDay Date
+    | ToDoMsg ToDo.Msg
 
 
 -- INIT
 init: (Model, Cmd Msg)
 init =
-    ( Model ( Date.fromCalendarDate 2020 Jan 1 ) Nothing Nothing Month
+    ( Model ( Date.fromCalendarDate 2020 Jan 1 ) Nothing Nothing MonthCalendar (ToDo.init)
     , Date.today |> Task.perform  UpdateDay
     )
 
@@ -54,14 +60,16 @@ view model =
     let 
         showMonth = viewMonth model
         showWeek = viewWeek model
+        showDay = ToDo.view model.todo
         show = 
-            if model.showType == Month then
+            if model.showType == MonthCalendar then
                 showMonth
-            else 
+            else if model.showType == WeekCalendar then
                 showWeek
-        modeChangeString = if model.showType == Month then "Week" else "Month"
-        modeChangeMsg = if model.showType == Month then ShowWeek else ShowMonth
-
+            else
+                Html.map ToDoMsg showDay
+        modeChangeString = if model.showType == MonthCalendar then "Week" else "Month"
+        modeChangeMsg = if model.showType == MonthCalendar then ShowWeek else ShowMonth
     in 
         div []
         [ div [] [ text ("Today is " ++ (Date.toIsoString model.today ) )] 
@@ -75,14 +83,36 @@ dayToString day =
     String.fromInt day.day
 
 
-viewWeekInner: List Day -> Html Msg
-viewWeekInner week =
-    List.map (\day -> td [] [ text (dayToString day) ]) week |> tr [] 
+viewWeekInner: Int -> Month -> List Day -> Html Msg
+viewWeekInner year month week =
+    let
+        msgYear: Day -> Int
+        msgYear day =
+            if month == Jan && day.monthType == Previous then
+                year - 1
+            else if month == Dec && day.monthType == Next then
+                year + 1
+            else 
+                year
+
+        msgMonth: Day -> Month
+        msgMonth day =
+            Date.monthToNumber month
+                |> (\x -> x +  (if day.monthType == Previous then -1 else if day.monthType == Next then 1 else 0) )
+                |> (\monthNum -> if monthNum == -1 then 12 else if monthNum == 13 then 1 else monthNum)
+                |> Date.numberToMonth
+        
+        dayToDate: Day -> Date
+        dayToDate day =
+            Date.fromCalendarDate (msgYear day) (msgMonth day) day.day
+    in 
+        List.map (\day -> td [] [ viewButton (dayToString day) (ShowDay (dayToDate day)) ]) week |> tr [] 
 
 
 viewWeek: Model -> Html Msg
 viewWeek model =
     let
+        _ = Debug.log "Date" (List.map (\todo -> Date.toIsoString todo.date) model.todo.todos)
         forcusDate = Maybe.withDefault model.today model.forcusDate
 
         forcusDayNum = Date.day forcusDate
@@ -104,7 +134,7 @@ viewWeek model =
 
         forcusDayWeek = getForcusDayWeek (Maybe.withDefault [[]] model.monthShowDayList)
 
-        weekShow = List.singleton ( viewWeekInner  forcusDayWeek  )
+        weekShow = List.singleton ( viewWeekInner (Date.year forcusDate) (Date.month forcusDate)  forcusDayWeek )
 
         showList = (youbiList) ++ weekShow
 
@@ -141,8 +171,9 @@ viewButton massage  msg =
 
 viewMonth: Model -> Html Msg
 viewMonth model =
-    let
-        calendarDaysList = List.map (\week -> viewWeekInner week) (Maybe.withDefault [[]] model.monthShowDayList)
+    let 
+        forcusDate = Maybe.withDefault model.today model.forcusDate
+        calendarDaysList = List.map (\week -> viewWeekInner (Date.year forcusDate) (Date.month forcusDate) week) (Maybe.withDefault [[]] model.monthShowDayList)
         youbiShowList = youbiList
         showList = youbiShowList ++ calendarDaysList
     in
@@ -158,12 +189,16 @@ viewMonth model =
 update: Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        initDay = Date.fromCalendarDate 2020 Jan 1
+        initDate = Date.fromCalendarDate 2020 Jan 1
+
+        unwrapWithDefaultDate: Maybe Date -> Date
+        unwrapWithDefaultDate date =
+            Maybe.withDefault initDate date
         
         calendarUpdate: Unit -> Int -> Maybe Date -> Model
         calendarUpdate calUnit calNum date =
             let 
-                day = Maybe.withDefault initDay date
+                day = unwrapWithDefaultDate date
                 calDay = Date.add calUnit calNum day
                 calYear = Date.year calDay
                 calMonth = Date.month calDay
@@ -213,7 +248,17 @@ update msg model =
                 )
 
             ShowMonth -> 
-                ( { model | showType = Month }, Cmd.none )
+                ( { model | showType = MonthCalendar }, Cmd.none )
 
             ShowWeek -> 
-                ( { model | showType = Week }, Cmd.none)
+                ( { model | showType = WeekCalendar }, Cmd.none)
+
+            ShowDay date -> 
+                let 
+                    todoModel = ToDo.updateDate date model.todo
+                in
+                    ( { model | showType = DayCalendar, forcusDate = Just date, todo = todoModel }, Cmd.none )
+
+            ToDoMsg todoMsg ->
+                ( { model | todo = ToDo.update todoMsg model.todo }, Cmd.none )
+                

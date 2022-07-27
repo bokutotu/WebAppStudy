@@ -59,8 +59,7 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let 
-        todoHtml = Html.map ToDoMsg (ToDo.view model.todo)
         calendarHtml = Html.map CalendarMsg (Calendar.view model.calendar)
-        listHtml = [todoHtml, calendarHtml]
+        listHtml = [calendarHtml]
     in
         Browser.Document "ToDo App" listHtml

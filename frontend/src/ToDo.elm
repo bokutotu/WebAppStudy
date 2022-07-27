@@ -1,8 +1,11 @@
-module ToDo exposing (Model, Msg, init, update, view)
+module ToDo exposing (..)
 
 import Html exposing (Html, button, div, form, input, li, option, select, text, ul)
 import Html.Attributes exposing (placeholder, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+
+import Date exposing (Date)
+import Time exposing (Month(..))
 
 
 type State
@@ -15,6 +18,7 @@ type alias ToDo =
     { id : Int
     , name : String
     , state : State
+    , date: Date
     }
 
 
@@ -31,9 +35,9 @@ stateToString state =
             "Doing"
 
 
-newToDo : Int -> String -> ToDo
-newToDo id name =
-    { id = id, name = name, state = Will }
+newToDo : Int -> String -> Date -> ToDo
+newToDo id name date =
+    ToDo id name Will date
 
 
 -- ToDoMsg
@@ -46,13 +50,13 @@ type Msg
 
 -- ToDoModel
 type alias Model =
-    { numToDos : Int, todos : List ToDo, addToDo : String }
+    { numToDos : Int, todos : List ToDo, addToDo : String, date: Date }
 
 
 -- init
 init : Model
 init =
-    { numToDos = 0, todos = [], addToDo = "" }
+    Model 0 [] "" (Date.fromCalendarDate 2020 Jan 1)
 
 
 updateItem : List ToDo -> Int -> State -> List ToDo
@@ -68,13 +72,18 @@ updateItem todoList id state =
     List.map toggle todoList
 
 
+updateDate: Date -> Model -> Model
+updateDate date_ model =
+    { model | date = date_ }
+
+
 -- update
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Add ->
             { model
-                | todos = model.todos ++ [ newToDo model.numToDos model.addToDo ]
+                | todos = model.todos ++ [ newToDo model.numToDos model.addToDo model.date ]
                 , addToDo = ""
                 , numToDos = model.numToDos + 1
             }
@@ -129,6 +138,7 @@ viewItems model state =
         [ div [] [ text (stateToString state) ]
         , model.todos
             |> List.filter (\item -> item.state == state)
+            |> List.filter (\item -> item.date == model.date)
             |> List.map (viewItem >> List.singleton >> li [])
             |> ul []
         ]
