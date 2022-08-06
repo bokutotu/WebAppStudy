@@ -159,14 +159,14 @@ viewHeader model =
                 , div
                     [ onClick ShowMonth ] 
                     [ label 
-                        [ AttrHtml.class "tab_item", css [Css.width (Css.pct 20)]] 
+                        [ AttrHtml.class "tab_item", css [Css.width (Css.pct 15)]]
                         [ text "Month" ] 
                     ]
 
                 , div
                     [ onClick ShowWeek ] 
                     [ label 
-                        [ AttrHtml.class "tab_item", css [Css.width (Css.pct 20)]] 
+                        [ AttrHtml.class "tab_item", css [Css.width (Css.pct 15)]] 
                         [ text "Week" ]
                     ]
 
@@ -178,7 +178,7 @@ viewHeader model =
                     ]
 
                 , div
-                    [ onClick ( if model.showType == MonthCalendar then PrevMonth else PrevWeek ) ] 
+                    [ onClick ( if model.showType == MonthCalendar then NextMonth else NextWeek ) ] 
                     [ label 
                         [ AttrHtml.class "tab_item", css [Css.width (Css.pct 2)]]
                         [ text ">" ] 
@@ -287,8 +287,22 @@ viewWeek model =
 
         showList = (youbiList) ++ weekShow
 
+        cssList = 
+            [ descendants
+                [ selector ".day_item"
+                    [ Css.height (Css.pct 100)
+                    , Css.textAlign Css.center
+                    , Css.hover [Css.opacity (Css.num 0.75)]
+                    , Css.fontSize (Css.px 20)
+                    , Css.cursor Css.pointer
+                    , Css.color (Css.rgb 86 86 86)
+                    , Css.fontWeight Css.bold
+                    ]
+                ]
+            ]
+
     in
-        div [ ]
+        div [ css cssList ]
         [ table [ css [Css.tableLayout Css.fixed, Css.width (Css.pct 100)] ] showList ]
 
 
