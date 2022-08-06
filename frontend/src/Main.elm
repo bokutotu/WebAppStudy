@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (..)
+-- import Html exposing (..)
+import Html.Styled exposing (map, toUnstyled)
 
 import ToDo
 
@@ -59,7 +60,7 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let 
-        calendarHtml = Html.map CalendarMsg (Calendar.view model.calendar)
-        listHtml = [calendarHtml]
+        calendarHtml = map CalendarMsg (Calendar.view model.calendar)
+        listHtml = List.singleton (toUnstyled calendarHtml)
     in
         Browser.Document "ToDo App" listHtml

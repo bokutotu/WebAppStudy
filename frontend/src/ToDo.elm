@@ -1,8 +1,15 @@
 module ToDo exposing (..)
 
-import Html exposing (Html, button, div, form, input, li, option, select, text, ul)
-import Html.Attributes exposing (placeholder, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+-- import Html exposing (Html, button, div, form, input, li, option, select, text, ul)
+-- import Html.Attributes exposing (placeholder, type_, value)
+-- import Html.Events exposing (onClick, onInput, onSubmit)
+
+
+import Html.Styled.Events exposing (onClick, onSubmit, onInput)
+-- import Html exposing (Html)
+import Html.Styled exposing (Html,div, form, input, li, option, select, text, ul, button)
+-- import Html.Styled.Attributes as AttrHtml
+import Html.Styled.Attributes exposing (type_, value, placeholder)
 
 import Date exposing (Date)
 import Time exposing (Month(..))
