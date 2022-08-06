@@ -74,8 +74,6 @@ view model =
                 showWeek
             else
                 Html.Styled.map ToDoMsg showDay
-        modeChangeString = if model.showType == MonthCalendar then "Week" else "Month"
-        modeChangeMsg = if model.showType == MonthCalendar then ShowWeek else ShowMonth
     in 
         div 
             [ css 
@@ -95,15 +93,6 @@ viewHeader model =
         rightArrow = if model.showType == MonthCalendar then NextMonth else NextWeek
         leftArrow = if model.showType == MonthCalendar then PrevMonth else PrevWeek
 
-        selectCss = [ Css.border3 (Css.px 1) Css.solid (Css.hex "efefef")
-                    , Css.borderBottomColor Css.transparent
-                    , Css.borderTopLeftRadius <| Css.px 2
-                    , Css.borderTopRightRadius <| Css.px 2
-                    , Css.width (Css.px 70)
-                    ]
-        notSelectCss = [ Css.borderBottom3 (Css.px 1) Css.solid (Css.hex "efefef") 
-                       , Css.width (Css.px 70)
-                       ]
         css_: List Css.Style
         css_ =
             [ descendants
@@ -170,14 +159,14 @@ viewHeader model =
                     ]
 
                 , div
-                    [ onClick ( if model.showType == MonthCalendar then PrevMonth else PrevWeek ) ] 
+                    [ onClick leftArrow ] 
                     [ label 
                         [ AttrHtml.class "tab_item", css [Css.width (Css.pct 2)]]
                         [ text "<" ] 
                     ]
 
                 , div
-                    [ onClick ( if model.showType == MonthCalendar then NextMonth else NextWeek ) ] 
+                    [ onClick rightArrow ] 
                     [ label 
                         [ AttrHtml.class "tab_item", css [Css.width (Css.pct 2)]]
                         [ text ">" ] 
@@ -225,13 +214,12 @@ youbiList =
 
 viewButton: String -> Msg -> Html Msg
 viewButton massage  msg =
-    div [onClick msg, css []] [ Html.Styled.text massage ]
+    div [onClick msg ] [text massage ]
 
 
 viewWeekInner: Int -> Month -> List Day -> List ToDo -> Html Msg
 viewWeekInner year month week todos =
     let
-        _ = Debug.log "ToDo List from viewWeekInner" todos
         msgYear: Day -> Int
         msgYear day =
             if month == Jan && day.monthType == Previous then
@@ -284,11 +272,10 @@ viewWeekInner year month week todos =
         List.map 
             (\day -> 
                 td 
-                    [ AttrHtml.class "day_item", css ([Css.verticalAlign Css.top] ++ cssList) ]
+                    [ AttrHtml.class "day_item", css (Css.verticalAlign Css.top :: cssList) ]
                         [ div 
                             [ css [ Css.height (Css.px 10),Css.float Css.top] ] 
-                            ([viewButton (dayToString day) (ShowDay (dayToDate day))]
-                            ++ (todoDivList (dayToDate day)))]
+                            (viewButton (dayToString day) (ShowDay (dayToDate day)) :: (todoDivList (dayToDate day)))]
                     ) week |> Html.Styled.tr [] 
 
 

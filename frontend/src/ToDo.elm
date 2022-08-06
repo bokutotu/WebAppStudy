@@ -4,6 +4,9 @@ import Html.Styled.Events exposing (onClick, onSubmit, onInput)
 import Html.Styled exposing (Html,div, form, input, li, option, select, text, ul, button)
 import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (type_, value, placeholder)
+import Html.Styled.Attributes exposing (css)
+
+import Css
 
 import Date exposing (Date)
 import Time exposing (Month(..))
@@ -104,19 +107,26 @@ update msg model =
 -- view
 view : Model -> Html Msg
 view model =
-    div 
-        []
-        [ viewInput model
-        , viewItems model Will
-        , viewItems model Doing
-        , viewItems model Done
-        ]
+    let 
+        cssList = 
+            [ Css.width (Css.pct 100)
+            , Css.float Css.top
+            ]
+    in 
+        div 
+            [css cssList]
+            [ viewInput model
+            , viewItems model Will
+            , viewItems model Doing
+            , viewItems model Done
+            ]
 
 
 viewInput : Model -> Html Msg
 viewInput model =
     form
         [ onSubmit Add
+        , css [Css.margin2 (Css.px 0) (Css.auto), Css.display Css.block]
         ]
         [ div []
             [ input
