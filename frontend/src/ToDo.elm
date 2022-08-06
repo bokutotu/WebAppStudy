@@ -104,7 +104,8 @@ update msg model =
 -- view
 view : Model -> Html Msg
 view model =
-    div []
+    div 
+        []
         [ viewInput model
         , viewItems model Will
         , viewItems model Doing

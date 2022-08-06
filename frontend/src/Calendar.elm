@@ -84,9 +84,8 @@ view model =
               , Css.flexDirection Css.column
               ]
             ]
-            [ 
-                header [] [ viewHeader model ]
-                , show
+            [ viewHeader model
+            , show
             ]
 
 
@@ -110,7 +109,7 @@ viewHeader model =
             [ descendants
                 [ selector ".tabs"
                     [ Css.marginTop (Css.px 50)
-                    -- , Css.paddingBottom (Css.px 40)
+                    , Css.paddingBottom (Css.px 40)
                     -- , Css.backgroundColor (Css.rgb 255 255 255)
                     -- , Css.boxShadow4 (Css.px 0) (Css.px 0) (Css.px 10) (Css.rgba 0 0 0 0.2)
                     , Css.width (Css.pct 100)
@@ -147,7 +146,7 @@ viewHeader model =
             yearString ++ " " ++ monthString
 
     in
-        div [css css_] 
+        header [css css_] 
             [ div 
                 [ AttrHtml.class "tabs" ]
                 [ div [] 
