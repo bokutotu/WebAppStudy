@@ -3,14 +3,14 @@ module Calendar exposing (Msg, view, Model, update, init)
 
 import Css
 import Css.Global exposing (descendants, selector)
-import Html.Styled exposing (div, header, Html, thead, tr, th, text, table, h1, td, button, input, label)
+import Html.Styled exposing (div, header, Html, thead, tr, th, text, table, h1, td, button, input, label, map)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (css)
 
 import Date exposing ( Date, Unit(..) )
 
-import Task exposing ( .. )
+import Task 
 
 import Time exposing (Month(..), Weekday(..))
 
@@ -85,7 +85,7 @@ view model =
               ]
             ]
             [ 
-                viewHeader model
+                header [] [ viewHeader model ]
                 , show
             ]
 
@@ -185,7 +185,8 @@ viewHeader model =
                     ]
                 ]
             ]
-        
+
+
 dayToString: Day -> String
 dayToString day =
     String.fromInt day.day
@@ -228,9 +229,10 @@ viewButton massage  msg =
     div [onClick msg, css []] [ Html.Styled.text massage ]
 
 
-viewWeekInner: Int -> Month -> List Day -> Html Msg
-viewWeekInner year month week =
+viewWeekInner: Int -> Month -> List Day -> List ToDo -> Html Msg
+viewWeekInner year month week todos =
     let
+        _ = Debug.log "ToDo List from viewWeekInner" todos
         msgYear: Day -> Int
         msgYear day =
             if month == Jan && day.monthType == Previous then
@@ -250,12 +252,45 @@ viewWeekInner year month week =
         dayToDate: Day -> Date
         dayToDate day =
             Date.fromCalendarDate (msgYear day) (msgMonth day) day.day
+
+        extractToDo: Date -> List ToDo
+        extractToDo date =
+            List.filter (\todo -> todo.date == date) todos
+        
+        todoDivList: Date -> List (Html Msg)
+        todoDivList date =
+            List.map (\todo -> div [AttrHtml.class "todo_outer"] [ (ToDo.viewItem todo) ] ) (extractToDo date)
+                |> List.map (\html -> map (\msg -> ToDoMsg msg) html)
+
+        cssList = 
+            [ descendants
+                [ selector ".todo_outer" 
+                    [ Css.backgroundColor (Css.rgba 25 25 112 0.88)
+                    , Css.color (Css.rgb 255 255 255)
+                    , Css.borderRadius (Css.px 2)
+                    , Css.float Css.top
+                    ]
+                , selector ".todo_name"
+                    [ Css.fontWeight Css.lighter
+                    , Css.whiteSpace Css.noWrap
+                    , Css.textOverflow Css.ellipsis
+                    , Css.overflow Css.hidden
+                    ]
+                , selector ".todo_state" [ Css.display Css.none ]
+                , selector ".todo_radio_button" [ Css.display Css.none ]
+                ]
+            ]
+        
     in 
-    List.map (\day -> td [ AttrHtml.class "day_item", css [Css.verticalAlign Css.top] ]
-        [ div 
-            [ css [ Css.height (Css.px 10) ] ] 
-            [viewButton (dayToString day) (ShowDay (dayToDate day))] 
-        ]) week |> Html.Styled.tr []
+        List.map 
+            (\day -> 
+                td 
+                    [ AttrHtml.class "day_item", css ([Css.verticalAlign Css.top] ++ cssList) ]
+                        [ div 
+                            [ css [ Css.height (Css.px 10),Css.float Css.top] ] 
+                            ([viewButton (dayToString day) (ShowDay (dayToDate day))]
+                            ++ (todoDivList (dayToDate day)))]
+                    ) week |> Html.Styled.tr [] 
 
 
 
@@ -283,7 +318,7 @@ viewWeek model =
 
         forcusDayWeek = getForcusDayWeek (Maybe.withDefault [[]] model.monthShowDayList)
 
-        weekShow = List.singleton ( viewWeekInner (Date.year forcusDate) (Date.month forcusDate)  forcusDayWeek )
+        weekShow = List.singleton ( viewWeekInner (Date.year forcusDate) (Date.month forcusDate) forcusDayWeek model.todo.todos )
 
         showList = (youbiList) ++ weekShow
 
@@ -298,6 +333,16 @@ viewWeek model =
                     , Css.color (Css.rgb 86 86 86)
                     , Css.fontWeight Css.bold
                     ]
+                -- , selector ".todo_outer"
+                --     [ Css.margin (Css.px 1)
+                --     , Css.height (Css.px 3)
+                --     ]
+                -- , selector ".todo_name" 
+                --     [ Css.fontSize (Css.px 3)
+                --     , Css.margin (Css.px 1)
+                --     ]
+                -- , selector ".todo_item" 
+                --     [ Css.height (Css.px 7)]
                 ]
             ]
 
@@ -312,8 +357,8 @@ viewMonth model =
     let 
         forcusDate = Maybe.withDefault model.today model.forcusDate
         calendarDaysList = List.map 
-            (\week -> viewWeekInner (Date.year forcusDate) 
-            (Date.month forcusDate) week) (Maybe.withDefault [[]] model.monthShowDayList)
+            (\week -> viewWeekInner (Date.year forcusDate) (Date.month forcusDate) week model.todo.todos) 
+            (Maybe.withDefault [[]] model.monthShowDayList)
         youbiShowList = youbiList
         showList = youbiShowList ++ calendarDaysList
         cssList = 
@@ -326,6 +371,14 @@ viewMonth model =
                     , Css.cursor Css.pointer
                     , Css.color (Css.rgb 86 86 86  )
                     , Css.fontWeight Css.bold
+                    ]
+                , selector ".todo_outer"
+                    [ Css.margin (Css.px 1)
+                    , Css.height (Css.px 15)
+                    ]
+                , selector ".todo_name" 
+                    [ Css.fontSize (Css.px 13)
+                    , Css.margin (Css.px 1)
                     ]
                 ]
             ]

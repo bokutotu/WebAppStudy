@@ -1,14 +1,8 @@
 module ToDo exposing (..)
 
--- import Html exposing (Html, button, div, form, input, li, option, select, text, ul)
--- import Html.Attributes exposing (placeholder, type_, value)
--- import Html.Events exposing (onClick, onInput, onSubmit)
-
-
 import Html.Styled.Events exposing (onClick, onSubmit, onInput)
--- import Html exposing (Html)
 import Html.Styled exposing (Html,div, form, input, li, option, select, text, ul, button)
--- import Html.Styled.Attributes as AttrHtml
+import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (type_, value, placeholder)
 
 import Date exposing (Date)
@@ -153,10 +147,10 @@ viewItems model state =
 
 viewItem : ToDo -> Html Msg
 viewItem todo =
-    div []
-        [ div [] [ text todo.name ]
-        , div [] [ text (stateToString todo.state) ]
-        , div [] [ radioButton todo.id ]
+    div [ AttrHtml.class "todo_item" ]
+        [ div [ AttrHtml.class "todo_name" ] [ text todo.name ]
+        , div [ AttrHtml.class "todo_state" ] [ text (stateToString todo.state) ]
+        , div [ AttrHtml.class "todo_radio_button" ] [ radioButton todo.id ]
         ]
 
 
