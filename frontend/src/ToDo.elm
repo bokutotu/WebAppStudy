@@ -1,7 +1,7 @@
 module ToDo exposing (..)
 
 import Html.Styled.Events exposing (onClick, onInput)
-import Html.Styled exposing (Html,div, input, li, option, select, text, ul, button, textarea, label)
+import Html.Styled exposing (Html,div, input, li, option, select, text, ul, button, textarea)
 import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (type_, value, placeholder)
 import Html.Styled.Attributes exposing (css)
@@ -53,17 +53,29 @@ type Msg
     | InputName String
     | InputContent String
     | ChangeState State Int
+    | ShowContent ShowContent
+
+
+type ShowContent
+    = ShowToDo State
+    | ShowAdd
 
 
 -- ToDoModel
 type alias Model =
-    { numToDos : Int, todos : List ToDo, addToDoName : String, addToDoContent : String, date: Date }
+    { numToDos : Int
+    , todos : List ToDo
+    , addToDoName : String
+    , addToDoContent : String
+    , date: Date 
+    , showContent : ShowContent
+    }
 
 
 -- init
 init : Model
 init =
-    Model 0 [] "" "" (Date.fromCalendarDate 2020 Jan 1)
+    Model 0 [] "" "" (Date.fromCalendarDate 2020 Jan 1) (ShowToDo Will)
 
 
 updateItem : List ToDo -> Int -> State -> List ToDo
@@ -108,6 +120,8 @@ update msg model =
             { model
                 | todos = updateItem model.todos id state
             }
+        ShowContent content ->
+            { model | showContent = content}
 
 
 -- view
@@ -118,13 +132,40 @@ view model =
             [ Css.width (Css.pct 100)
             , Css.height (Css.pct 100)
             ]
+        show = 
+            case model.showContent of
+                ShowAdd -> viewInput model
+                ShowToDo state -> viewItems model state
+        buttons = 
+            let 
+                itemCss = 
+                    [ Css.boxSizing Css.borderBox
+                    , Css.padding2 (Css.px 10) (Css.px 40) ]
+            in
+                div 
+                    [ css 
+                        [ Css.displayFlex
+                        , Css.justifyContent Css.center
+                        ] 
+                    ]
+                    [ button 
+                        [ onClick (ShowContent (ShowToDo Will)) , css itemCss ]
+                        [ text "Will" ]
+                    , button 
+                        [ onClick (ShowContent (ShowToDo Doing)), css itemCss]
+                        [ text "Doing" ]
+                    , button 
+                        [ onClick (ShowContent (ShowToDo Done)), css itemCss]
+                        [ text "Done" ]
+                    , button
+                        [ onClick (ShowContent ShowAdd), css itemCss ]
+                        [ text "Add" ]
+                    ]
     in 
         div 
             [css cssList]
-            [ viewInput model
-            , viewItems model Will
-            , viewItems model Doing
-            , viewItems model Done
+            [ buttons
+            , show
             ]
 
 
@@ -134,9 +175,7 @@ viewInput model =
         [ css 
             [ Css.alignItems Css.center 
             , Css.displayFlex
-            , Css.height (Css.vh 100)
             , Css.justifyContent Css.center
-            -- , Css.height (Css.px 1000)
             , descendants
                 [ selector ".form" 
                     [ Css.borderRadius (Css.px 20)
@@ -175,7 +214,6 @@ viewInput model =
                     , Css.width (Css.px 100)
                     , Css.height (Css.px 40)
                     , Css.fontSize (Css.px 20)
-                    , 
                     ] 
                 , selector ".submit-button-outer"
                     <| if String.length model.addToDoName == 0 then [Css.display Css.none] else []
