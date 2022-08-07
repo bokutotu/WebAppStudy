@@ -1,12 +1,13 @@
 module ToDo exposing (..)
 
-import Html.Styled.Events exposing (onClick, onSubmit, onInput)
-import Html.Styled exposing (Html,div, form, input, li, option, select, text, ul, button)
+import Html.Styled.Events exposing (onClick, onInput)
+import Html.Styled exposing (Html,div, input, li, option, select, text, ul, button, textarea, label)
 import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (type_, value, placeholder)
 import Html.Styled.Attributes exposing (css)
 
 import Css
+import Css.Global exposing (descendants, selector)
 
 import Date exposing (Date)
 import Time exposing (Month(..))
@@ -21,6 +22,7 @@ type State
 type alias ToDo =
     { id : Int
     , name : String
+    , content: String
     , state : State
     , date: Date
     }
@@ -39,28 +41,29 @@ stateToString state =
             "Doing"
 
 
-newToDo : Int -> String -> Date -> ToDo
-newToDo id name date =
-    ToDo id name Will date
+newToDo : Int -> String -> String -> Date -> ToDo
+newToDo id name content date =
+    ToDo id name content Will date
 
 
 -- ToDoMsg
 type Msg
     = Add
     | TurnDone
-    | Input String
+    | InputName String
+    | InputContent String
     | ChangeState State Int
 
 
 -- ToDoModel
 type alias Model =
-    { numToDos : Int, todos : List ToDo, addToDo : String, date: Date }
+    { numToDos : Int, todos : List ToDo, addToDoName : String, addToDoContent : String, date: Date }
 
 
 -- init
 init : Model
 init =
-    Model 0 [] "" (Date.fromCalendarDate 2020 Jan 1)
+    Model 0 [] "" "" (Date.fromCalendarDate 2020 Jan 1)
 
 
 updateItem : List ToDo -> Int -> State -> List ToDo
@@ -87,16 +90,19 @@ update msg model =
     case msg of
         Add ->
             { model
-                | todos = model.todos ++ [ newToDo model.numToDos model.addToDo model.date ]
-                , addToDo = ""
+                | todos = model.todos ++ [ newToDo model.numToDos model.addToDoName model.addToDoContent model.date ]
+                , addToDoName = ""
                 , numToDos = model.numToDos + 1
             }
 
         TurnDone ->
-            { model | addToDo = "" }
+            { model | addToDoName = "" }
 
-        Input toDoName ->
-            { model | addToDo = toDoName }
+        InputName toDoName ->
+            { model | addToDoName = toDoName}
+
+        InputContent toDoContent ->
+            { model | addToDoContent = toDoContent }
 
         ChangeState state id ->
             { model
@@ -110,7 +116,7 @@ view model =
     let 
         cssList = 
             [ Css.width (Css.pct 100)
-            , Css.float Css.top
+            , Css.height (Css.pct 100)
             ]
     in 
         div 
@@ -124,29 +130,115 @@ view model =
 
 viewInput : Model -> Html Msg
 viewInput model =
-    form
-        [ onSubmit Add
-        , css [Css.margin2 (Css.px 0) (Css.auto), Css.display Css.block]
+    div 
+        [ css 
+            [ Css.alignItems Css.center 
+            , Css.displayFlex
+            , Css.height (Css.vh 100)
+            , Css.justifyContent Css.center
+            -- , Css.height (Css.px 1000)
+            , descendants
+                [ selector ".form" 
+                    [ Css.borderRadius (Css.px 20)
+                    , Css.boxSizing Css.borderBox
+                    , Css.height (Css.px 700)
+                    , Css.padding (Css.px 20)
+                    , Css.width (Css.px 400)
+                    ]
+                , selector ".title"
+                    [ Css.fontSize (Css.px 36)
+                    , Css.marginTop (Css.px 30)
+                    ]
+                , selector ".input-container"
+                    [ Css.position Css.relative
+                    , Css.width (Css.pct 100)
+                    ]
+                , selector ".ic1"
+                    [ Css.marginTop (Css.px 40) ]
+                , selector ".ic1"
+                    [ Css.marginTop (Css.px 30) ]
+                , selector ".input"
+                    [ Css.backgroundColor (Css.rgb 244 244 244)
+                    , Css.borderRadius (Css.px 12)
+                    , Css.border (Css.px 0)
+                    , Css.boxSizing Css.borderBox
+                    , Css.fontSize (Css.px 18)
+                    , Css.padding (Css.px 4)
+                    , Css.width (Css.pct 100)
+                    ]
+                , selector ".submit-button"
+                    [ Css.backgroundColor (Css.rgb 0 200 200)
+                    , Css.borderRadius (Css.px 12)
+                    , Css.border (Css.px 0)
+                    , Css.boxSizing (Css.borderBox)
+                    , Css.color (Css.rgb 255 255 255)
+                    , Css.width (Css.px 100)
+                    , Css.height (Css.px 40)
+                    , Css.fontSize (Css.px 20)
+                    , 
+                    ] 
+                , selector ".submit-button-outer"
+                    <| if String.length model.addToDoName == 0 then [Css.display Css.none] else []
+                ]
+            ]
         ]
-        [ div []
-            [ input
-                [ type_ "text"
-                , value model.addToDo
-                , placeholder "To Do Name"
-                , onInput Input
+        [ div 
+            [ AttrHtml.class "form" ]
+            [ div 
+                [ AttrHtml.class "title" ]
+                [ text "Add To Do task" ]
+            , div 
+                [ AttrHtml.classList 
+                    [ ("input-container", True)
+                    , ("ic1", True)
+                    ]
+                , css [Css.height (Css.px 50)]
+                , value model.addToDoName
+                , onInput InputName
                 ]
-                []
-            , button
-                [ type_ "submit"
+                [ input
+                    [ AttrHtml.id "firstname"
+                    , AttrHtml.class "input"
+                    , type_ "text"
+                    , placeholder "To Do Name"
+                    ]
+                    []
                 ]
-                [ text "Add" ]
+
+            , div 
+                [ AttrHtml.classList 
+                    [ ("input-container", True)
+                    , ("ic2", True)
+                    ]
+                , css [Css.height (Css.px 300)]
+                ]
+                [ textarea
+                    [ AttrHtml.id "firstname"
+                    , AttrHtml.class "input"
+                    , placeholder "To Do Content"
+                    , css 
+                        [ Css.resize Css.none
+                        , Css.flexGrow (Css.num 1)
+                        , Css.height (Css.px 250)
+                        ]
+                    , value model.addToDoContent
+                    , onInput InputContent
+                    ]
+                    []
+                ]
+            , div [ AttrHtml.class "submit-button-outer" ]
+                [ button
+                    [ type_ "submit"
+                    , AttrHtml.class "submit-button"
+                    ]
+                    [ text "Add" ]
+                ]
             ]
         ]
 
-
 viewItems : Model -> State -> Html Msg
 viewItems model state =
-    div []
+    div [css [ Css.width (Css.pct 100), Css.justifyContent Css.center, Css.displayFlex ]]
         [ div [] [ text (stateToString state) ]
         , model.todos
             |> List.filter (\item -> item.state == state)

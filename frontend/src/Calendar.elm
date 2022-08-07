@@ -80,6 +80,7 @@ view model =
               [ Css.margin2 Css.zero Css.auto
               , Css.width (Css.pct 60)
               , Css.flexDirection Css.column
+              , Css.height (Css.pct 100)
               ]
             ]
             [ viewHeader model
@@ -93,21 +94,17 @@ viewHeader model =
         rightArrow = if model.showType == MonthCalendar then NextMonth else NextWeek
         leftArrow = if model.showType == MonthCalendar then PrevMonth else PrevWeek
 
-        css_: List Css.Style
-        css_ =
+        cssList: List Css.Style
+        cssList =
             [ descendants
                 [ selector ".tabs"
                     [ Css.marginTop (Css.px 50)
                     , Css.paddingBottom (Css.px 40)
-                    -- , Css.backgroundColor (Css.rgb 255 255 255)
-                    -- , Css.boxShadow4 (Css.px 0) (Css.px 0) (Css.px 10) (Css.rgba 0 0 0 0.2)
                     , Css.width (Css.pct 100)
                     , Css.margin2 (Css.px 0) (Css.auto)
                     ]
                 , selector ".tab_item"
                     [ Css.height (Css.px 40)
-                    -- , Css.border3 (Css.px 1) Css.solid (Css.rgba 0 0 0 0.1 )
-                    -- , Css.backgroundColor (Css.rgb 217 217 217)
                     , Css.lineHeight (Css.px 50)
                     , Css.fontSize (Css.px 20)
                     , Css.textAlign Css.center
@@ -135,7 +132,7 @@ viewHeader model =
             yearString ++ " " ++ monthString
 
     in
-        header [css css_] 
+        header [css cssList] 
             [ div 
                 [ AttrHtml.class "tabs" ]
                 [ div [] 
