@@ -1,7 +1,8 @@
 module ToDo exposing (..)
 
 import Html.Styled.Events exposing (onClick, onInput)
-import Html.Styled exposing (Html,div, input, li, option, select, text, ul, button, textarea)
+import Html.Styled exposing 
+    (Html,div, input, li, option, select, text, ul, button, textarea)
 import Html.Styled.Attributes as AttrHtml
 import Html.Styled.Attributes exposing (type_, value, placeholder)
 import Html.Styled.Attributes exposing (css)
@@ -102,7 +103,10 @@ update msg model =
     case msg of
         Add ->
             { model
-                | todos = model.todos ++ [ newToDo model.numToDos model.addToDoName model.addToDoContent model.date ]
+                | todos = 
+                    model.todos 
+                        ++ [ newToDo model.numToDos model.addToDoName 
+                                model.addToDoContent model.date ]
                 , addToDoName = ""
                 , numToDos = model.numToDos + 1
             }
@@ -140,12 +144,20 @@ view model =
             let 
                 itemCss = 
                     [ Css.boxSizing Css.borderBox
-                    , Css.padding2 (Css.px 10) (Css.px 40) ]
+                    , Css.padding2 (Css.px 10) (Css.px 40) 
+                    , Css.backgroundColor (Css.rgb 244 244 244)
+                    , Css.border (Css.px 0)
+                    , Css.borderRadius (Css.px 5)
+                    ]
             in
                 div 
                     [ css 
                         [ Css.displayFlex
-                        , Css.justifyContent Css.center
+                        , Css.justifyContent Css.spaceBetween
+                        , Css.width (Css.pct 60)
+                        , Css.margin2 (Css.px 0) (Css.auto)
+                        , Css.paddingTop (Css.px 20)
+                        , Css.paddingBottom (Css.px 20)
                         ] 
                     ]
                     [ button 
@@ -216,7 +228,9 @@ viewInput model =
                     , Css.fontSize (Css.px 20)
                     ] 
                 , selector ".submit-button-outer"
-                    <| if String.length model.addToDoName == 0 then [Css.display Css.none] else []
+                    <| if String.length model.addToDoName == 0 then 
+                            [Css.display Css.none] 
+                        else []
                 ]
             ]
         ]
