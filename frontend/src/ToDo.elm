@@ -108,7 +108,9 @@ update msg model =
                         ++ [ newToDo model.numToDos model.addToDoName 
                                 model.addToDoContent model.date ]
                 , addToDoName = ""
+                , addToDoContent = ""
                 , numToDos = model.numToDos + 1
+                , showContent = ShowToDo Will
             }
 
         TurnDone ->
@@ -157,7 +159,7 @@ view model =
                         , Css.width (Css.pct 60)
                         , Css.margin2 (Css.px 0) (Css.auto)
                         , Css.paddingTop (Css.px 20)
-                        , Css.paddingBottom (Css.px 20)
+                        , Css.paddingTop (Css.px 20)
                         ] 
                     ]
                     [ button 
@@ -282,6 +284,7 @@ viewInput model =
                 [ button
                     [ type_ "submit"
                     , AttrHtml.class "submit-button"
+                    , onClick Add
                     ]
                     [ text "Add" ]
                 ]
